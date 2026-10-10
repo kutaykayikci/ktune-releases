@@ -1,0 +1,105 @@
+# Etiket (v0.5.0 gibi) gelince KTUNE'u derler ve GitHub Releases'a yukler.
+#
+# Etiketi ozel ktune reposundaki "Yayınla" isi gonderir (release dalina
+# merge edilince). Kaynak kod o commit'ten salt-okunur deploy key ile alinir;
+# derleme cikti olarak yalnizca kurulum dosyasini ve latest.json'u yayinlar.
+#
+# Gerekenler (bir kez kuruldu):
+#   secrets.KTUNE_SOURCE_KEY  ozel ktune reposunu okuyabilen SSH deploy key
+name: Derle ve yayınla
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sürüm bilgisi
+        id: rel
+        shell: pwsh
+        run: |
+          $r = Get-Content release.json -Raw | ConvertFrom-Json
+          "version=$($r.version)" >> $env:GITHUB_OUTPUT
+          "sha=$($r.source_sha)" >> $env:GITHUB_OUTPUT
+          "KTUNE $($r.version) · kaynak $($r.source_sha)"
+
+      - name: Kaynak kod
+        uses: actions/checkout@v4
+        with:
+          repository: kutaykayikci/ktune
+          ref: ${{ steps.rel.outputs.sha }}
+          ssh-key: ${{ secrets.KTUNE_SOURCE_KEY }}
+          path: src
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Bağımlılıklar
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r src/requirements.txt pyinstaller
+
+      - name: KTUNE.exe
+        working-directory: src
+        run: pyinstaller ktune.spec --noconfirm --clean
+
+      - name: Kendi kendini test (gizli pencere)
+        continue-on-error: true
+        working-directory: src
+        shell: pwsh
+        run: |
+          $out = "$env:RUNNER_TEMP\selftest.json"
+          $p = Start-Process dist\KTUNE\KTUNE.exe -ArgumentList '--selftest', $out -PassThru
+          if (-not $p.WaitForExit(150000)) { $p.Kill(); throw "selftest zaman aşımı" }
+          if (Test-Path $out) { Get-Content $out }
+          if ($p.ExitCode -ne 0) { throw "selftest başarısız (çıkış $($p.ExitCode))" }
+
+      - name: Kurulum sihirbazı
+        working-directory: src
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress | Out-Null }
+          & $iscc "/DAppVersion=${{ steps.rel.outputs.version }}" installer\ktune.iss
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup derlemesi başarısız" }
+
+      - name: Kur / kaldır testi
+        working-directory: src
+        shell: pwsh
+        run: |
+          $exe = "$env:LOCALAPPDATA\Programs\KTUNE\KTUNE.exe"
+          Start-Process installer\Output\KTUNE-Setup.exe -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/NOLAUNCH=1' -Wait
+          if (-not (Test-Path $exe)) { throw "kurulum sonrası KTUNE.exe yok" }
+          "kuruldu: $((Get-Item $exe).VersionInfo.ProductVersion)"
+          Start-Process "$env:LOCALAPPDATA\Programs\KTUNE\unins000.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES' -Wait
+          Start-Sleep 3
+          if (Test-Path $exe) { throw "kaldırma sonrası KTUNE.exe hâlâ duruyor" }
+          "kaldırıldı"
+
+      - name: latest.json ve sürüm notu
+        run: python src/tools/release.py ${{ steps.rel.outputs.version }} src/installer/Output/KTUNE-Setup.exe out
+
+      - name: GitHub sürümü
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $v = "${{ steps.rel.outputs.version }}"
+          gh release create "v$v" src/installer/Output/KTUNE-Setup.exe out/latest.json `
+            --title "KTUNE v$v" --notes-file out/notes.md --latest
+          "### KTUNE v$v yayında" >> $env:GITHUB_STEP_SUMMARY
+          "https://github.com/${{ github.repository }}/releases/tag/v$v" >> $env:GITHUB_STEP_SUMMARY
