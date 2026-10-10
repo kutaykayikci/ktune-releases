@@ -6,6 +6,7 @@
   <a href="https://github.com/kutaykayikci/ktune-releases/releases/latest"><img alt="sürüm / version" src="https://img.shields.io/github/v/release/kutaykayikci/ktune-releases?label=s%C3%BCr%C3%BCm%20%C2%B7%20version&color=FF2E88&style=flat-square"></a>
   <img alt="Windows 10 / 11" src="https://img.shields.io/badge/Windows-10%20%2F%2011%20%C2%B7%2064%20bit-141414?style=flat-square">
   <img alt="ücretsiz / free" src="https://img.shields.io/badge/%C3%BCcretsiz%20%C2%B7%20free-reklams%C4%B1z%20%C2%B7%20no%20ads-19D3C5?style=flat-square">
+  <a href="https://ktune.dev/lisans/"><img alt="lisans / license: GPL-3.0" src="https://img.shields.io/badge/lisans%20%C2%B7%20license-GPL--3.0-FFD21F?style=flat-square"></a>
 </p>
 
 <p align="center"><b>Türkçe</b> · <a href="#english">English</a></p>
@@ -54,6 +55,11 @@ KTUNE hesapsız da tam çalışır. Ücretsiz hesap açarsan bilgisayarlarının
 ### Kaldırma
 **Ayarlar → Uygulamalar → Yüklü uygulamalar → KTUNE → Kaldır.** Kaldırırken bilgisayarındaki yerel verileri (ölçümler, geçmiş) de silmek isteyip istemediğin sorulur.
 
+### Açık kaynak
+KTUNE **[GPL-3.0](LICENSE)** lisanslıdır. Her sürümün kaynak kodu, sürüm sayfasında **KTUNE-source.zip** olarak durur (en son sürüm: [ktune.dev/kaynak](https://ktune.dev/kaynak)). İncelemek, değiştirmek ve paylaşmak serbest; değiştirip dağıtırsan senin sürümün de GPL-3.0 olmalı ve kaynağıyla birlikte gelmeli. Ayrıntılar: **[ktune.dev/lisans](https://ktune.dev/lisans/)**.
+
+> **Küçük bir rica:** KTUNE'un kodunu ya da fikrini kullanarak bir şey yaparsan, README'nde ya da Hakkında sayfanda **[ktune.dev](https://ktune.dev)**'e bir bağlantı verirsen çok seviniriz. Zorunlu değil, ama emeğe teşekkürün en güzel yolu. Değiştirilmiş bir sürümü dağıtırken karışmasın diye ona başka bir ad ve logo vermeni de rica ederiz.
+
 ---
 
 ## English
@@ -100,8 +106,13 @@ KTUNE works fully without an account. With a free one, you can follow your PCs' 
 ### Uninstall
 **Settings → Apps → Installed apps → KTUNE → Uninstall.** You'll be asked whether to also delete the local data on your PC (measurements, history).
 
+### Open source
+KTUNE is licensed under **[GPL-3.0](LICENSE)**. Every release's source code is on its release page as **KTUNE-source.zip** (latest: [ktune.dev/source](https://ktune.dev/source)). You're free to read, change and share it; if you distribute a modified version, it must also be GPL-3.0 and come with its source. Details: **[ktune.dev/lisans](https://ktune.dev/lisans/?lang=en)**.
+
+> **A small request:** if you build something with KTUNE's code or ideas, we'd really appreciate a link to **[ktune.dev](https://ktune.dev)** in your README or About page. It's not required, but it's the nicest way to say thanks. If you distribute a modified version, please also give it a different name and logo so people don't mix them up.
+
 ---
 
-<p align="center"><sub>Bu repo yalnızca kurulum dosyalarını ve sürüm notlarını barındırır; her sürüm GitHub Actions'ta derlenip test edilir ve derleme kaydı Actions sekmesinde görülebilir.<br>This repo only hosts installers and release notes; every version is built and tested on GitHub Actions, and its build log is visible in the Actions tab.</sub></p>
+<p align="center"><sub>Bu repo kurulum dosyalarını, kaynak kod zip'lerini ve sürüm notlarını barındırır; her sürüm GitHub Actions'ta derlenip test edilir ve derleme kaydı Actions sekmesinde görülebilir.<br>This repo hosts installers, source code zips and release notes; every version is built and tested on GitHub Actions, and its build log is visible in the Actions tab.</sub></p>
 
 <p align="center"><a href="https://ktune.dev">ktune.dev</a> · <a href="mailto:kutaykayikci3@gmail.com">kutaykayikci3@gmail.com</a> · <a href="https://buymeacoffee.com/kutaykayikci">☕ Buy me a coffee</a></p>
