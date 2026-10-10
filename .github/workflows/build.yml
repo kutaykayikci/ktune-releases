@@ -24,7 +24,7 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Sürüm bilgisi
         id: rel
@@ -36,7 +36,7 @@ jobs:
           "KTUNE $($r.version) · kaynak $($r.source_sha)"
 
       - name: Kaynak kod
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: kutaykayikci/ktune
           ref: ${{ steps.rel.outputs.sha }}
@@ -44,7 +44,7 @@ jobs:
           path: src
           persist-credentials: false
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
 
@@ -58,7 +58,6 @@ jobs:
         run: pyinstaller ktune.spec --noconfirm --clean
 
       - name: Kendi kendini test (gizli pencere)
-        continue-on-error: true
         working-directory: src
         shell: pwsh
         run: |
