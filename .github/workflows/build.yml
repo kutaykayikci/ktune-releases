@@ -2,7 +2,8 @@
 #
 # Etiketi ozel ktune reposundaki "Yayınla" isi gonderir (release dalina
 # merge edilince). Kaynak kod o commit'ten salt-okunur deploy key ile alinir;
-# derleme cikti olarak yalnizca kurulum dosyasini ve latest.json'u yayinlar.
+# derleme cikti olarak kurulum dosyasini, latest.json'u ve kaynak kod zip'ini
+# (GPL-3.0) yayinlar.
 #
 # Gerekenler (bir kez kuruldu):
 #   secrets.KTUNE_SOURCE_KEY  ozel ktune reposunu okuyabilen SSH deploy key
@@ -92,13 +93,22 @@ jobs:
       - name: latest.json ve sürüm notu
         run: python src/tools/release.py ${{ steps.rel.outputs.version }} src/installer/Output/KTUNE-Setup.exe out
 
+      - name: Kaynak kod zip'i (GPL-3.0)
+        working-directory: src
+        shell: pwsh
+        run: |
+          # yalnizca derlemek icin gerekenler (.gitattributes'taki export-ignore'lar disarida)
+          git archive --format=zip --prefix="ktune-${{ steps.rel.outputs.version }}/" -o ../out/KTUNE-source.zip HEAD
+          if ($LASTEXITCODE -ne 0) { throw "git archive başarısız" }
+          Add-Content ../out/notes.md "`n---`n**Kaynak kodu / Source code (GPL-3.0):** KTUNE-source.zip"
+
       - name: GitHub sürümü
         env:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: |
           $v = "${{ steps.rel.outputs.version }}"
-          gh release create "v$v" src/installer/Output/KTUNE-Setup.exe out/latest.json `
+          gh release create "v$v" src/installer/Output/KTUNE-Setup.exe out/latest.json out/KTUNE-source.zip `
             --title "KTUNE v$v" --notes-file out/notes.md --latest
           "### KTUNE v$v yayında" >> $env:GITHUB_STEP_SUMMARY
           "https://github.com/${{ github.repository }}/releases/tag/v$v" >> $env:GITHUB_STEP_SUMMARY
