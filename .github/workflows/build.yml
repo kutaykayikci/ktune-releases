@@ -6,7 +6,8 @@
 # (GPL-3.0) yayinlar.
 #
 # Gerekenler (bir kez kuruldu):
-#   secrets.KTUNE_SOURCE_KEY  ozel ktune reposunu okuyabilen SSH deploy key
+#   secrets.KTUNE_SOURCE_KEY   ozel ktune reposunu okuyabilen SSH deploy key
+#   secrets.KTUNE_SIGNING_KEY  latest.json'u imzalayan Ed25519 gizli anahtari (uygulama core/trust.py ile dogrular)
 name: Derle ve yayınla
 
 on:
@@ -90,8 +91,14 @@ jobs:
           if (Test-Path $exe) { throw "kaldırma sonrası KTUNE.exe hâlâ duruyor" }
           "kaldırıldı"
 
-      - name: latest.json ve sürüm notu
+      - name: latest.json (imzalı) ve sürüm notu
+        env:
+          KTUNE_SIGNING_KEY: ${{ secrets.KTUNE_SIGNING_KEY }}
         run: python src/tools/release.py ${{ steps.rel.outputs.version }} src/installer/Output/KTUNE-Setup.exe out
+
+      - name: Taşınabilir sürüm (zip)
+        working-directory: src
+        run: python tools/make_portable.py ../out
 
       - name: Kaynak kod zip'i (GPL-3.0)
         working-directory: src
@@ -108,7 +115,7 @@ jobs:
         shell: pwsh
         run: |
           $v = "${{ steps.rel.outputs.version }}"
-          gh release create "v$v" src/installer/Output/KTUNE-Setup.exe out/latest.json out/KTUNE-source.zip `
+          gh release create "v$v" src/installer/Output/KTUNE-Setup.exe out/latest.json out/KTUNE-source.zip "out/KTUNE-portable-$v.zip" `
             --title "KTUNE v$v" --notes-file out/notes.md --latest
           "### KTUNE v$v yayında" >> $env:GITHUB_STEP_SUMMARY
           "https://github.com/${{ github.repository }}/releases/tag/v$v" >> $env:GITHUB_STEP_SUMMARY
